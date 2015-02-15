@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+require 'marky_markov'
+require 'rubygems'
+require 'chatterbot/dsl'
+
+consumer_key 'VVMPLWWdIDPKBT7bMfEOHjgdI'
+consumer_secret 'xGTwjg0kQuuhMb973Nj8gz2sJd386beSye6sflVjcFEjd6t1hO'
+token '3036893615-v8HpOAdspg73oBmTA5NqDFqtlsIKJHZaTbMBSy6'
+secret 'VB8rQBYD87yDB4VGKJAtIMozb3wy3ZRj4cvyER9MautTp'
+
+
+markov = MarkyMarkov::Dictionary.new('dictionary', 2)
+markov.parse_file "/Users/cro/RubymineProjects/jadensmarkov/jadensmith_all.txt"
+# puts markov.generate_n_sentences
+
+LAST = %w(the i'm i to and it's but my they of you're a there's of in you'll just as she he or for)
+
+def timer(seconds)
+  timer = seconds
+
+  (timer).times do
+    timer -= 1
+    print "Next action in #{timer} seconds\r"
+    sleep 1
+  end
+end
+
+def check(message)
+  message.delete_at(-1) if LAST.include?(message[-1].downcase)
+end
+
+loop do
+message = markov.generate_n_words rand(11..15)
+message = message.split(' ').map{|x| x.capitalize}
+
+check(message)
+
+check(message)
+
+3.times do
+  begin
+  tweet message.join(' ') + '. . .'
+  puts message.join(' ') + '. . .'
+
+    index = 0
+    search("jaden smith") do |tweet|
+      break if index == 2
+      favorite tweet
+      puts "fav:" + tweet.text
+      index += 1
+    end
+
+    search("markov-chain") do |tweet|
+      break if index == 0
+      favorite tweet
+      puts "fav:" + tweet.text
+      index -= 1
+    end
+
+  rescue Twitter::Error => e
+  puts "#{e}. . .retrying."
+  retry
+  end
+  timer(3*60)
+end
+
+timer(60*60)
+  #ADD LOGGING
+end
